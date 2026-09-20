@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, } from '@nestjs/common';
 import express from 'express';
 import { Res } from '@nestjs/common';
 import { PlacesService } from './places.service';
@@ -45,6 +36,7 @@ export class PlacesController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.placesService.remove(id);
   }
