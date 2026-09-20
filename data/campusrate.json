@@ -12,7 +12,30 @@
       "reviewCount": 0,
       "createdAt": "2026-09-20T20:22:17.627Z",
       "updatedAt": "2026-09-20T20:22:17.627Z"
+    },
+    {
+      "id": "plc_7dd054fa-207c-4e5b-b093-e58a997bef5d",
+      "name": "Salle de test conflit",
+      "description": "Pour tester le 409",
+      "category": "STUDY_SPACE",
+      "address": "Pavillon B",
+      "services": [],
+      "status": "ACTIVE",
+      "averageRating": 3,
+      "reviewCount": 1,
+      "createdAt": "2026-09-20T22:08:26.222Z",
+      "updatedAt": "2026-09-20T22:08:26.222Z"
     }
   ],
-  "reviews": []
+  "reviews": [
+    {
+      "id": "rev_cc46d73c-cedb-442a-b3d5-3229f38c337d",
+      "placeId": "plc_7dd054fa-207c-4e5b-b093-e58a997bef5d",
+      "authorName": "Test",
+      "rating": 3,
+      "comment": "Juste pour tester le conflit de suppression.",
+      "createdAt": "2026-09-20T22:09:42.244Z",
+      "updatedAt": "2026-09-20T22:09:42.244Z"
+    }
+  ]
 }
