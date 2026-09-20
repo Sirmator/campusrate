@@ -1,0 +1,18 @@
+{
+  "places": [
+    {
+      "id": "plc_f482a6d0-3906-4ee9-b7ad-a66ea73c4a4f",
+      "name": "Bibliotheque de Test",
+      "description": "Espace de TEST.",
+      "category": "LIBRARY",
+      "address": "Pavillon A, local A-999",
+      "services": [],
+      "status": "ACTIVE",
+      "averageRating": null,
+      "reviewCount": 0,
+      "createdAt": "2026-09-20T20:22:17.627Z",
+      "updatedAt": "2026-09-20T20:22:17.627Z"
+    }
+  ],
+  "reviews": []
+}

@@ -8,12 +8,12 @@ export class PlaceReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Post()
-  create(
+  async create(
     @Param('placeId') placeId: string,
     @Body() createReviewDto: CreateReviewDto,
     @Res({ passthrough: true }) res: express.Response,
   ) {
-    const review = this.reviewsService.create(placeId, createReviewDto);
+    const review = await this.reviewsService.create(placeId, createReviewDto);
     res.setHeader('Location', `/api/v1/reviews/${review.id}`);
     return review;
   }

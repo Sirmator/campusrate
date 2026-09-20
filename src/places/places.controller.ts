@@ -6,16 +6,17 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 
+
 @Controller('places')
 export class PlacesController {
   constructor(private readonly placesService: PlacesService) {}
 
   @Post()
-  create(
+  async create(
     @Body() createPlaceDto: CreatePlaceDto,
     @Res({ passthrough: true }) res: express.Response,
   ) {
-    const place = this.placesService.create(createPlaceDto);
+    const place = await this.placesService.create(createPlaceDto);
     res.setHeader('Location', `/api/v1/places/${place.id}`);
     return place;
   }
