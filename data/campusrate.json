@@ -25,6 +25,32 @@
       "reviewCount": 1,
       "createdAt": "2026-09-20T22:08:26.222Z",
       "updatedAt": "2026-09-20T22:08:26.222Z"
+    },
+    {
+      "id": "plc_1444e7b7-3e8a-45ec-8a85-5596b2a9b222",
+      "name": "Bibliotheque de TestEVIL",
+      "description": "Espace de TEST EVIL.",
+      "category": "LIBRARY",
+      "address": "Pavillon E, local E-666",
+      "services": [],
+      "status": "ACTIVE",
+      "averageRating": null,
+      "reviewCount": 0,
+      "createdAt": "2026-09-22T18:34:16.690Z",
+      "updatedAt": "2026-09-22T18:34:16.690Z"
+    },
+    {
+      "id": "plc_752d48d8-a3fc-438c-8a97-5b19d6bc3e61",
+      "name": "Bibliotheque de TestGOOD",
+      "description": "Espace de TEST GOOD.",
+      "category": "LIBRARY",
+      "address": "Pavillon G, local G-999",
+      "services": [],
+      "status": "ACTIVE",
+      "averageRating": null,
+      "reviewCount": 0,
+      "createdAt": "2026-09-22T18:34:36.651Z",
+      "updatedAt": "2026-09-22T18:34:36.651Z"
     }
   ],
   "reviews": [
