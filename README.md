@@ -1,118 +1,136 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# CampusRate
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST permettant à la communauté étudiante du campus de consulter des endroits ou services et de publier des appréciations accompagnées d'une note.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Projet réalisé dans le cadre du cours 420-514 (Techniques de l'informatique).
 
-## Description
+## Objectif
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+CampusRate offre une API professionnelle pour gérer deux ressources principales :
+- **Places** (endroits évalués) : espaces d'étude, bibliothèques, services alimentaires, etc.
+- **Reviews** (appréciations) : notes et commentaires associés à un place précis.
 
-## Project setup
+## Fonctionnalités
 
-```bash
-$ npm install
-```
+- Créer, lister, consulter, modifier et supprimer des places
+- Créer, lister, consulter, modifier et supprimer des reviews
+- Filtrage des places par catégorie et pagination des résultats
+- Validation stricte des entrées (types, formats, valeurs autorisées, propriétés interdites)
+- Recalcul automatique de la note moyenne et du nombre de reviews d'un place
+- Gestion uniforme des erreurs au format Problem Details (`application/problem+json`)
+- Persistance des données dans un fichier JSON local, survivant aux redémarrages
+- Documentation interactive Swagger/OpenAPI
 
-## Compile and run the project
+## Technologies
 
-```bash
-# development
-$ npm run start
+- [NestJS](https://nestjs.com/) (TypeScript)
+- `class-validator` / `class-transformer` pour la validation
+- `@nestjs/swagger` pour la documentation OpenAPI
+- `node:fs/promises` pour la persistance JSON
+- Postman pour les tests manuels
 
-# watch mode
-$ npm run start:dev
+## Installation
 
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
+Prérequis : Node.js 18+ et npm.
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/Sirmator/campusrate.git
+cd campusrate
+npm ci
 ```
 
-## Deployment
+## Configuration
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Copie `.env.example` vers `.env` et ajuste les valeurs si besoin :
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+| Variable | Description | Exemple |
+|---|---|---|
+| `PORT` | Port d'écoute du serveur | `3000` |
+| `DATA_FILE_PATH` | Chemin du fichier JSON de persistance | `./data/campusrate.json` |
 
-## Observability
+L'application refuse de démarrer si une de ces variables est absente.
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+## Démarrage
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+```bash
+npm run start:dev
+```
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+Le serveur démarre sur `http://localhost:3000`, avec le préfixe `/api/v1` sur toutes les routes.
 
-This project is already instrumented. Create a free account at [observe.nestjs.com](https://observe.nestjs.com), add an application, and paste the generated app key and secret into the `ObserveModule.forRoot()` call in `src/app.module.ts`.
+## Lint et compilation
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+```bash
+npm run lint
+npm run build
+```
 
-## Resources
+## Documentation Swagger
 
-Check out a few resources that may come in handy when working with NestJS:
+Une fois le serveur démarré, la documentation interactive est disponible sur :
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+**http://localhost:3000/api/docs**
 
-## Support
+## Contrat général de l'API
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Justification des choix de design
 
-## Stay in touch
+| Décision | Choix | Justification |
+|---|---|---|
+| Nommage des ressources | `places`, `reviews` | Anglais, pluriel, minuscule ; cohérent avec `placeId` déjà présent dans le modèle de données |
+| Versionnement | Dans l'URL (`/api/v1/...`) | Recommandation retenue pour les APIs REST publiques et documentées |
+| Imbrication | Combinaison | Imbriqué pour la création et le listage (le contexte du place est nécessaire) ; indépendant une fois l'id de la review connu — évite les chemins trop profonds tout en exprimant la relation réelle |
+| Codes de statut | Standards REST (200/201/204/400/404/409) | Voir tableau des routes ci-dessous |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Routes disponibles
 
-## License
+| Méthode | URI | Description | Succès | Erreurs |
+|---|---|---|---|---|
+| `POST` | `/api/v1/places` | Créer un place | `201` | `400` |
+| `GET` | `/api/v1/places` | Lister les places (filtre + pagination) | `200` | `400` |
+| `GET` | `/api/v1/places/:id` | Consulter un place | `200` | `404` |
+| `PATCH` | `/api/v1/places/:id` | Modifier partiellement un place | `200` | `400`, `404` |
+| `DELETE` | `/api/v1/places/:id` | Supprimer un place | `204` | `404`, `409` |
+| `POST` | `/api/v1/places/:id/reviews` | Créer une review pour ce place | `201` | `400`, `404` |
+| `GET` | `/api/v1/places/:id/reviews` | Lister les reviews d'un place | `200` | `404` |
+| `GET` | `/api/v1/reviews/:id` | Consulter une review | `200` | `404` |
+| `PATCH` | `/api/v1/reviews/:id` | Modifier partiellement une review | `200` | `400`, `404` |
+| `DELETE` | `/api/v1/reviews/:id` | Supprimer une review | `204` | `404` |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Format des erreurs
+
+Toutes les erreurs suivent le format Problem Details :
+
+```json
+{
+  "type": "about:blank",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Place plc_xxxx introuvable",
+  "instance": "/api/v1/places/plc_xxxx"
+}
+```
+
+### Format de pagination
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "totalItems": 0,
+    "totalPages": 0
+  }
+}
+```
+
+## Tests manuels
+
+Une collection Postman couvrant les scénarios principaux (création, consultation, modification, suppression, erreurs de validation, ressource inexistante, conflit de suppression, filtre, pagination, persistance après redémarrage) se trouve dans `postman/CampusRate.postman_collection.json`.
+
+## Structure du projet
