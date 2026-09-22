@@ -276,7 +276,7 @@ src/
 
 # 🤖 IAGraphie
 
-* **Share Link :**
+* **Share Link : https://chatgpt.com/share/6ab2e794-d0e4-83ea-88b9-0d885d33b23f**
 
 ---
 
