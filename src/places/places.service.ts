@@ -12,9 +12,12 @@ export class PlacesService {
   async create(dto: CreatePlaceDto) {
     const data = await this.dataStore.read();
     const now = new Date().toISOString();
-    const place = {
+    const place: Place = {
       id: `plc_${randomUUID()}`,
-      ...dto,
+      name: dto.name,
+      description: dto.description,
+      category: dto.category,
+      address: dto.address,
       services: dto.services ?? [],
       status: dto.status ?? 'ACTIVE',
       averageRating: null,
@@ -76,8 +79,8 @@ export class PlacesService {
     await this.dataStore.write(data);
   }
 
-  private findPlaceOrThrow(data: any, id: string) {
-    const place = data.places.find((p: { id: string }) => p.id === id);
+  private findPlaceOrThrow(data: DataStore, id: string): Place {
+    const place = data.places.find((p) => p.id === id);
     if (!place) {
       throw new NotFoundException(`Place ${id} introuvable`);
     }

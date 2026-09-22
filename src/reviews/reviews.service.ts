@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PlacesService } from '../places/places.service';
-import { DataStoreService, DataStore, Place, Review, } from '../common/persistence/data-store.service';
+import { DataStoreService, DataStore, Review, } from '../common/persistence/data-store.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 
@@ -17,10 +17,12 @@ export class ReviewsService {
 
     const data = await this.dataStore.read();
     const now = new Date().toISOString();
-    const review = {
+    const review: Review = {
       id: `rev_${randomUUID()}`,
       placeId,
-      ...dto,
+      authorName: dto.authorName,
+      rating: dto.rating,
+      comment: dto.comment,
       createdAt: now,
       updatedAt: now,
     };
