@@ -272,13 +272,6 @@ src/
 * 🧪 Aucun test automatisé n'est actuellement présent. Les fonctionnalités doivent donc être testées manuellement avec Postman ou un autre outil de test d'API.
 * 💽 Il n'y a actuellement aucun système de sauvegarde ou de récupération des données. Si le fichier JSON devient corrompu ou si une panne entraîne sa perte, les données peuvent être perdues.
 
----
-
-# 🤖 IAGraphie
-
-* **Share Link : https://chatgpt.com/share/6ab2e794-d0e4-83ea-88b9-0d885d33b23f**
-
----
 
 <p align="center">
   <sub>CampusRate — Projet réalisé dans le cadre du cours 420-514</sub>
