@@ -36,7 +36,7 @@ export class PlacesController {
     @Res({ passthrough: true }) res: express.Response,
   ) {
     const place = await this.placesService.create(createPlaceDto);
-    res.setHeader('Location', `/api/v1/places/${place._id}`);
+    res.setHeader('Location', `/api/v1/places/${place._id.toString()}`);
     return place;
   }
 

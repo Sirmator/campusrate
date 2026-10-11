@@ -24,7 +24,7 @@ export class PlaceReviewsController {
     @Res({ passthrough: true }) res: express.Response,
   ) {
     const review = await this.reviewsService.create(placeId, createReviewDto);
-    res.setHeader('Location', `/api/v1/reviews/${review._id}`);
+    res.setHeader('Location', `/api/v1/reviews/${review._id.toString()}`);
     return review;
   }
 
