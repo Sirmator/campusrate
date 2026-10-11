@@ -6,6 +6,7 @@ import databaseConfig from './config/database.config';
 import { PlacesModule } from './places/places.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { PersistenceModule } from './common/persistence/persistence.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PersistenceModule } from './common/persistence/persistence.module';
     PersistenceModule,
     PlacesModule,
     ReviewsModule,
+    DatabaseModule,
   ],
 })
 export class AppModule {}

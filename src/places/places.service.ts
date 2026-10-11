@@ -1,89 +1,95 @@
-import { Injectable, NotFoundException, ConflictException, } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-import { DataStoreService, DataStore, Place, } from '../common/persistence/data-store.service';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { PlacesRepository, PlaceFilter } from './places.repository';
+import { Review } from '../reviews/schemas/review.schema';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 
 @Injectable()
 export class PlacesService {
-  constructor(private readonly dataStore: DataStoreService) {}
+  constructor(
+    private readonly placesRepository: PlacesRepository,
+    @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+  ) {}
 
   async create(dto: CreatePlaceDto) {
-    const data = await this.dataStore.read();
-    const now = new Date().toISOString();
-    const place: Place = {
-      id: `plc_${randomUUID()}`,
+    return this.placesRepository.create({
       name: dto.name,
       description: dto.description,
       category: dto.category,
       address: dto.address,
       services: dto.services ?? [],
       status: dto.status ?? 'ACTIVE',
-      averageRating: null,
-      reviewCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-    data.places.push(place);
-    await this.dataStore.write(data);
-    return place;
+    });
   }
 
   async findAll(query: QueryPlacesDto) {
-    const data = await this.dataStore.read();
-    let results = data.places;
-
-    if (query.category) {
-      results = results.filter((p) => p.category === query.category);
+    const filter: PlaceFilter = {};
+    if (query.category !== undefined) {
+      filter.category = query.category;
     }
 
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
-    const totalItems = results.length;
-    const totalPages = Math.ceil(totalItems / limit) || 0;
-    const start = (page - 1) * limit;
-    const paginated = results.slice(start, start + limit);
+    const skip = (page - 1) * limit;
+
+    const [data, totalItems] = await Promise.all([
+      this.placesRepository.findAll(filter, skip, limit),
+      this.placesRepository.count(filter),
+    ]);
 
     return {
-      data: paginated,
-      pagination: { page, limit, totalItems, totalPages },
+      data,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit) || 0,
+      },
     };
   }
 
   async findOne(id: string) {
-    const data = await this.dataStore.read();
-    return this.findPlaceOrThrow(data, id);
+    const place = await this.placesRepository.findById(id);
+    if (!place) {
+      throw new NotFoundException(`Place ${id} introuvable`);
+    }
+    return place;
   }
 
   async update(id: string, dto: UpdatePlaceDto) {
-    const data = await this.dataStore.read();
-    const place = this.findPlaceOrThrow(data, id);
-    Object.assign(place, dto, { updatedAt: new Date().toISOString() });
-    await this.dataStore.write(data);
+    const place = await this.placesRepository.updateById(id, dto);
+    if (!place) {
+      throw new NotFoundException(`Place ${id} introuvable`);
+    }
     return place;
   }
 
   async remove(id: string) {
-    const data = await this.dataStore.read();
-    this.findPlaceOrThrow(data, id);
+    await this.findOne(id);
 
-    const hasReviews = data.reviews.some((r) => r.placeId === id);
-    if (hasReviews) {
+    const reviewCount = await this.reviewModel
+      .countDocuments({ placeId: id })
+      .exec();
+    if (reviewCount > 0) {
       throw new ConflictException(
         `Place ${id} possede des reviews et ne peut pas etre supprime`,
       );
     }
 
-    data.places = data.places.filter((p) => p.id !== id);
-    await this.dataStore.write(data);
+    await this.placesRepository.deleteById(id);
   }
 
-  private findPlaceOrThrow(data: DataStore, id: string): Place {
-    const place = data.places.find((p) => p.id === id);
-    if (!place) {
-      throw new NotFoundException(`Place ${id} introuvable`);
-    }
-    return place;
+  async updateAggregates(
+    id: string,
+    data: { averageRating: number | null; reviewCount: number },
+  ) {
+    await this.placesRepository.updateById(id, data);
   }
 }

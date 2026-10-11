@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, Res, } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  HttpStatus,
+  Res,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import express from 'express';
 import { PlacesService } from './places.service';
@@ -8,6 +20,7 @@ import { QueryPlacesDto } from './dto/query-places.dto';
 import { PaginatedPlacesDto } from './dto/paginated-places.dto';
 import { PlaceEntity } from './entities/place.entity';
 import { ProblemDetailsDto } from '../common/dto/problem-details.dto';
+import { ParseMongoIdPipe } from '../common/pipes/parse-mongo-id.pipe';
 
 @ApiTags('places')
 @Controller('places')
@@ -23,7 +36,7 @@ export class PlacesController {
     @Res({ passthrough: true }) res: express.Response,
   ) {
     const place = await this.placesService.create(createPlaceDto);
-    res.setHeader('Location', `/api/v1/places/${place.id}`);
+    res.setHeader('Location', `/api/v1/places/${place._id}`);
     return place;
   }
 
@@ -37,20 +50,24 @@ export class PlacesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Consulter un endroit' })
-  @ApiParam({ name: 'id', example: 'plc_01JABC123' })
+  @ApiParam({ name: 'id', example: '671f1a2b3c4d5e6f7a8b9c0d' })
   @ApiResponse({ status: 200, type: PlaceEntity })
+  @ApiResponse({ status: 400, type: ProblemDetailsDto })
   @ApiResponse({ status: 404, type: ProblemDetailsDto })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseMongoIdPipe) id: string) {
     return this.placesService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Modifier partiellement un endroit' })
-  @ApiParam({ name: 'id', example: 'plc_01JABC123' })
+  @ApiParam({ name: 'id', example: '671f1a2b3c4d5e6f7a8b9c0d' })
   @ApiResponse({ status: 200, type: PlaceEntity })
   @ApiResponse({ status: 400, type: ProblemDetailsDto })
   @ApiResponse({ status: 404, type: ProblemDetailsDto })
-  update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto) {
+  update(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @Body() updatePlaceDto: UpdatePlaceDto,
+  ) {
     return this.placesService.update(id, updatePlaceDto);
   }
 
@@ -59,11 +76,12 @@ export class PlacesController {
   @ApiOperation({
     summary: 'Supprimer un endroit (refuse si des reviews existent)',
   })
-  @ApiParam({ name: 'id', example: 'plc_01JABC123' })
+  @ApiParam({ name: 'id', example: '671f1a2b3c4d5e6f7a8b9c0d' })
   @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 400, type: ProblemDetailsDto })
   @ApiResponse({ status: 404, type: ProblemDetailsDto })
   @ApiResponse({ status: 409, type: ProblemDetailsDto })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseMongoIdPipe) id: string) {
     return this.placesService.remove(id);
   }
 }

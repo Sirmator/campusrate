@@ -12,7 +12,17 @@ const CATEGORIES = [
 ];
 const STATUSES = ['ACTIVE', 'TEMPORARILY_CLOSED', 'INACTIVE'];
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  toJSON: {
+    transform: (_doc, ret: Record<string, any>) => {
+      ret.id = ret._id.toString();
+      delete ret._id;
+      delete ret.__v;
+      return ret;
+    },
+  },
+})
 export class Place extends Document {
   @Prop({ required: true })
   name: string;
