@@ -1,16 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  HttpCode,
-  HttpStatus,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, Res, } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import express from 'express';
 import { PlacesService } from './places.service';
@@ -18,6 +6,7 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { QueryPlacesDto } from './dto/query-places.dto';
 import { PaginatedPlacesDto } from './dto/paginated-places.dto';
+import { CategoryStatsDto } from './dto/category-stats.dto';
 import { PlaceEntity } from './entities/place.entity';
 import { ProblemDetailsDto } from '../common/dto/problem-details.dto';
 import { ParseMongoIdPipe } from '../common/pipes/parse-mongo-id.pipe';
@@ -46,6 +35,15 @@ export class PlacesController {
   @ApiResponse({ status: 400, type: ProblemDetailsDto })
   findAll(@Query() query: QueryPlacesDto) {
     return this.placesService.findAll(query);
+  }
+
+  @Get('stats/categories')
+  @ApiOperation({
+    summary: 'Statistiques par categorie (agregation MongoDB)',
+  })
+  @ApiResponse({ status: 200, type: [CategoryStatsDto] })
+  statsByCategory() {
+    return this.placesService.statsByCategory();
   }
 
   @Get(':id')

@@ -92,4 +92,8 @@ export class PlacesService {
   ) {
     await this.placesRepository.updateById(id, data);
   }
+
+  async statsByCategory() {
+    return this.placesRepository.statsByCategory();
+  }
 }
