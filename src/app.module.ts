@@ -20,13 +20,14 @@ import { ReviewsModule } from './reviews/reviews.module';
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
           .default('development'),
-        CORS_ORIGINS: Joi.string().when('NODE_ENV', {
-          is: 'production',
-          then: Joi.required(),
-          otherwise: Joi.string().default('http://localhost:5173'),
-        }),
+        CORS_ORIGINS: Joi.string(),
         THROTTLE_TTL: Joi.number().integer().min(1).default(60000),
         THROTTLE_LIMIT: Joi.number().integer().min(1).default(100),
+      }).custom((env: { NODE_ENV?: string; CORS_ORIGINS?: string }) => {
+        if (env.NODE_ENV === 'production' && !env.CORS_ORIGINS) {
+          throw new Error('CORS_ORIGINS est obligatoire en production');
+        }
+        return env;
       }),
     }),
     ThrottlerModule.forRootAsync({
