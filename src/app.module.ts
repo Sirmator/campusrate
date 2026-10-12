@@ -15,6 +15,14 @@ import { ReviewsModule } from './reviews/reviews.module';
       validationSchema: Joi.object({
         MONGO_URI: Joi.string().required(),
         PORT: Joi.number().default(3000),
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
+        CORS_ORIGINS: Joi.string().when('NODE_ENV', {
+          is: 'production',
+          then: Joi.required(),
+          otherwise: Joi.string().default('http://localhost:5173'),
+        }),
       }),
     }),
     MongooseModule.forRootAsync({
