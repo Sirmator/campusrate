@@ -41,6 +41,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return 'Not Found';
       case HttpStatus.CONFLICT:
         return 'Conflict';
+      case HttpStatus.TOO_MANY_REQUESTS:
+        return 'Too Many Requests';
       default:
         return 'Error';
     }

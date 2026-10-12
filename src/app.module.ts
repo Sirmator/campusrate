@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import * as Joi from 'joi';
 import databaseConfig from './config/database.config';
 import { DatabaseModule } from './database/database.module';
@@ -23,7 +25,18 @@ import { ReviewsModule } from './reviews/reviews.module';
           then: Joi.required(),
           otherwise: Joi.string().default('http://localhost:5173'),
         }),
+        THROTTLE_TTL: Joi.number().integer().min(1).default(60000),
+        THROTTLE_LIMIT: Joi.number().integer().min(1).default(100),
       }),
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => [
+        {
+          ttl: configService.get<number>('THROTTLE_TTL', 60000),
+          limit: configService.get<number>('THROTTLE_LIMIT', 100),
+        },
+      ],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -35,6 +48,12 @@ import { ReviewsModule } from './reviews/reviews.module';
     DatabaseModule,
     PlacesModule,
     ReviewsModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
