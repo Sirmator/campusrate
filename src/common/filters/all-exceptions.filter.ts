@@ -1,4 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger, } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import express from 'express';
 
 @Catch()
@@ -18,6 +25,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = exception.getStatus();
       title = this.titleForStatus(status);
       detail = this.extractDetail(exception.getResponse());
+    } else if (this.isPayloadTooLarge(exception)) {
+      status = HttpStatus.PAYLOAD_TOO_LARGE;
+      title = this.titleForStatus(status);
+      detail = 'Le corps de la requete depasse la taille maximale autorisee.';
     } else {
       this.logger.error(
         exception instanceof Error ? exception.stack : exception,
@@ -33,6 +44,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     });
   }
 
+  private isPayloadTooLarge(exception: unknown): boolean {
+    return (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'type' in exception &&
+      (exception as { type?: unknown }).type === 'entity.too.large'
+    );
+  }
+
   private titleForStatus(status: number): string {
     switch (status) {
       case HttpStatus.BAD_REQUEST:
@@ -41,6 +61,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return 'Not Found';
       case HttpStatus.CONFLICT:
         return 'Conflict';
+      case HttpStatus.PAYLOAD_TOO_LARGE:
+        return 'Payload Too Large';
       case HttpStatus.TOO_MANY_REQUESTS:
         return 'Too Many Requests';
       default:
@@ -53,7 +75,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return res;
     }
     if (typeof res === 'object' && res !== null && 'message' in res) {
-      const message = (res as any).message;
+      const message = (res as { message: unknown }).message;
       return Array.isArray(message) ? message.join('; ') : String(message);
     }
     return 'Une erreur est survenue.';

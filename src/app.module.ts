@@ -23,6 +23,7 @@ import { ReviewsModule } from './reviews/reviews.module';
         CORS_ORIGINS: Joi.string(),
         THROTTLE_TTL: Joi.number().integer().min(1).default(60000),
         THROTTLE_LIMIT: Joi.number().integer().min(1).default(100),
+        BODY_LIMIT: Joi.string().default('10kb'),
       }).custom((env: { NODE_ENV?: string; CORS_ORIGINS?: string }) => {
         if (env.NODE_ENV === 'production' && !env.CORS_ORIGINS) {
           throw new Error('CORS_ORIGINS est obligatoire en production');
