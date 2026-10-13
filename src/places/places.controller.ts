@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, Res, } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  HttpStatus,
+  Res,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import express from 'express';
 import { PlacesService } from './places.service';
@@ -20,6 +32,11 @@ export class PlacesController {
   @ApiOperation({ summary: 'Creer un nouvel endroit' })
   @ApiResponse({ status: 201, type: PlaceEntity })
   @ApiResponse({ status: 400, type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 409,
+    type: ProblemDetailsDto,
+    description: 'Un endroit avec le meme nom et la meme adresse existe deja',
+  })
   async create(
     @Body() createPlaceDto: CreatePlaceDto,
     @Res({ passthrough: true }) res: express.Response,
@@ -62,6 +79,11 @@ export class PlacesController {
   @ApiResponse({ status: 200, type: PlaceEntity })
   @ApiResponse({ status: 400, type: ProblemDetailsDto })
   @ApiResponse({ status: 404, type: ProblemDetailsDto })
+  @ApiResponse({
+    status: 409,
+    type: ProblemDetailsDto,
+    description: 'Un autre endroit a deja le meme nom et la meme adresse',
+  })
   update(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() updatePlaceDto: UpdatePlaceDto,

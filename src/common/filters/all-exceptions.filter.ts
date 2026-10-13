@@ -29,6 +29,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = HttpStatus.PAYLOAD_TOO_LARGE;
       title = this.titleForStatus(status);
       detail = 'Le corps de la requete depasse la taille maximale autorisee.';
+    } else if (this.isDuplicateKey(exception)) {
+      status = HttpStatus.CONFLICT;
+      title = this.titleForStatus(status);
+      detail = 'Une ressource avec les memes valeurs uniques existe deja.';
     } else {
       this.logger.error(
         exception instanceof Error ? exception.stack : exception,
@@ -50,6 +54,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception !== null &&
       'type' in exception &&
       (exception as { type?: unknown }).type === 'entity.too.large'
+    );
+  }
+
+  private isDuplicateKey(exception: unknown): boolean {
+    return (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'code' in exception &&
+      (exception as { code?: unknown }).code === 11000
     );
   }
 

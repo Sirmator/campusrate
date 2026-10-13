@@ -50,3 +50,4 @@ export class Place extends Document {
 }
 
 export const PlaceSchema = SchemaFactory.createForClass(Place);
+PlaceSchema.index({ name: 1, address: 1 }, { unique: true });
