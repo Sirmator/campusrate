@@ -30,10 +30,11 @@ CampusRate gère deux ressources principales :
 - Création, consultation, modification et suppression des reviews.
 - Filtrage des places par catégorie et pagination des résultats.
 - Recalcul automatique de la note moyenne et du nombre de reviews de chaque place.
+- Statistiques par catégorie calculées par une agrégation MongoDB.
 - Persistance des données dans MongoDB à l'aide de Mongoose.
 - Validation stricte des entrées : types, formats, valeurs autorisées et rejet des propriétés inconnues.
 - Gestion uniforme des erreurs au format Problem Details (`application/problem+json`).
-- Ajout d'en-têtes de sécurité avec Helmet et configuration explicite de CORS.
+- Sécurité HTTP : Helmet, CORS configurable selon l'environnement, limitation de débit et limite de taille du corps des requêtes.
 - Documentation interactive de l'API avec Swagger/OpenAPI.
 
 ## 🛠️ Technologies
@@ -45,6 +46,7 @@ CampusRate gère deux ressources principales :
 | `class-validator` et `class-transformer` | Validation et transformation des données |
 | `joi` | Validation de la configuration au démarrage |
 | `helmet` | Ajout d'en-têtes de sécurité HTTP |
+| `@nestjs/throttler` | Limitation de débit |
 | `@nestjs/swagger` | Documentation OpenAPI |
 | Postman | Tests manuels de l'API |
 
@@ -85,7 +87,7 @@ La chaîne de connexion peut prendre la forme suivante :
 mongodb://localhost:27017/campusrate-dev
 ```
 
-Les collections `places` et `reviews` sont créées automatiquement par MongoDB lors de leur première utilisation en écriture.
+Les collections `places` et `reviews`, ainsi que leurs index, sont créées automatiquement par MongoDB et Mongoose lors du premier démarrage et de la première écriture.
 
 ## ⚙️ Configuration des variables d'environnement
 
@@ -101,8 +103,13 @@ Configurer ensuite les variables suivantes :
 |---|---|---|
 | `PORT` | Port d'écoute du serveur, soit `3000` par défaut | `3000` |
 | `MONGO_URI` | Chaîne de connexion à MongoDB, obligatoire | `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>` |
+| `NODE_ENV` | `development`, `production` ou `test` ; `development` par défaut | `development` |
+| `CORS_ORIGINS` | Origines CORS autorisées, séparées par des virgules. Obligatoire en production | `http://localhost:5173` |
+| `THROTTLE_TTL` | Durée de la fenêtre de limitation de débit, en millisecondes (`60000` par défaut) | `60000` |
+| `THROTTLE_LIMIT` | Nombre maximal de requêtes par fenêtre et par adresse IP (`100` par défaut) | `100` |
+| `BODY_LIMIT` | Taille maximale du corps JSON des requêtes (`10kb` par défaut) | `10kb` |
 
-L'application refuse de démarrer si `MONGO_URI` est absente ou invalide.
+L'application refuse de démarrer si `MONGO_URI` est absente ou invalide, ou si `CORS_ORIGINS` est absente alors que `NODE_ENV=production`.
 
 **Important :** le fichier `.env` peut contenir des informations sensibles, notamment le mot de passe de la base de données. Il ne doit jamais être ajouté au dépôt Git. Le fichier `.env.example` doit uniquement contenir des valeurs fictives ou des indications de configuration.
 
@@ -152,10 +159,11 @@ Une fois le serveur démarré, la documentation interactive est disponible à l'
 
 | Méthode | URI | Description | Succès | Erreurs |
 |---|---|---|---|---|
-| `POST` | `/api/v1/places` | Créer une place | `201` | `400` |
+| `POST` | `/api/v1/places` | Créer une place | `201` | `400`, `409` |
 | `GET` | `/api/v1/places` | Lister les places avec filtrage et pagination | `200` | `400` |
+| `GET` | `/api/v1/places/stats/categories` | Statistiques par catégorie (agrégation MongoDB) | `200` | |
 | `GET` | `/api/v1/places/:id` | Consulter une place | `200` | `400`, `404` |
-| `PATCH` | `/api/v1/places/:id` | Modifier partiellement une place | `200` | `400`, `404` |
+| `PATCH` | `/api/v1/places/:id` | Modifier partiellement une place | `200` | `400`, `404`, `409` |
 | `DELETE` | `/api/v1/places/:id` | Supprimer une place | `204` | `400`, `404`, `409` |
 | `POST` | `/api/v1/places/:placeId/reviews` | Créer une review pour une place | `201` | `400`, `404` |
 | `GET` | `/api/v1/places/:placeId/reviews` | Lister les reviews d'une place | `200` | `400`, `404` |
@@ -163,7 +171,12 @@ Une fois le serveur démarré, la documentation interactive est disponible à l'
 | `PATCH` | `/api/v1/reviews/:id` | Modifier partiellement une review | `200` | `400`, `404` |
 | `DELETE` | `/api/v1/reviews/:id` | Supprimer une review | `204` | `400`, `404` |
 
-**Règle métier :** une place qui possède encore des reviews ne peut pas être supprimée. L'API retourne alors une erreur `409 Conflict`.
+**Règles métier :**
+
+- Une place qui possède encore des reviews ne peut pas être supprimée : l'API retourne alors une erreur `409 Conflict`.
+- Deux places ne peuvent pas avoir à la fois le même nom et la même adresse : un `POST` ou un `PATCH` qui créerait un doublon retourne `409 Conflict`.
+
+Sur toutes les routes, les erreurs `413` (corps de requête trop volumineux) et `429` (trop de requêtes) peuvent aussi survenir.
 
 ### Changements par rapport au TP1
 
@@ -173,7 +186,7 @@ Une fois le serveur démarré, la documentation interactive est disponible à l'
 | Format des identifiants | `plc_<uuid>` / `rev_<uuid>` | Identifiants MongoDB de 24 caractères hexadécimaux |
 | Identifiant mal formé | `404` | `400` : le format est validé avant la recherche |
 
-Les URI, les méthodes HTTP, les codes de succès et la structure des représentations JSON restent inchangés. Les identifiants sont traités comme des chaînes opaques par les clients.
+Les URI existantes, les méthodes HTTP, les codes de succès et la structure des représentations JSON restent inchangés. Les identifiants sont traités comme des chaînes opaques par les clients. La route de statistiques est un ajout et ne modifie aucune route existante.
 
 ### Pagination
 
@@ -207,7 +220,7 @@ Exemple de réponse `404 Not Found` :
 }
 ```
 
-Les erreurs internes ne divulguent ni pile d'exécution, ni chemin interne, ni détail technique provenant du pilote MongoDB.
+Les erreurs internes et les erreurs MongoDB ne divulguent ni pile d'exécution, ni chemin interne, ni détail technique provenant du pilote.
 
 ---
 
@@ -230,6 +243,7 @@ Un client ne peut donc pas imposer les champs `id`, `createdAt`, `updatedAt`, `a
 | Requête | `category` | Filtre exact dont la valeur est contrôlée |
 | Requête | `page` / `limit` | Entiers ; `page` supérieur ou égal à 1 et `limit` compris entre 1 et 50 |
 | Chemin | `id`, `placeId` | Identifiants MongoDB valides |
+| Corps | Taille | Limitée par `BODY_LIMIT` (10 Ko par défaut) ; au-delà, `413` |
 
 Les filtres MongoDB sont construits à partir des champs autorisés et validés, plutôt que d'utiliser directement les objets fournis par le client. Cette approche contribue à prévenir les injections d'opérateurs MongoDB, par exemple `$ne`.
 
@@ -243,15 +257,24 @@ Helmet ajoute des en-têtes de sécurité HTTP aux réponses, notamment `Content
 
 ### CORS
 
-CORS est configuré explicitement avec les paramètres suivants :
+CORS est configuré explicitement :
 
-- **Origine autorisée :** `http://localhost:5173`
-- **Méthodes :** `GET`, `POST`, `PATCH`, `DELETE`
-- **En-têtes autorisés :** `Content-Type` et `Authorization`
+- **Origines autorisées :** lues dans la variable `CORS_ORIGINS` (liste séparée par des virgules). En développement, la valeur par défaut est `http://localhost:5173`.
+- **En production :** `CORS_ORIGINS` est obligatoire. L'application refuse de démarrer si elle est absente.
+- **Méthodes :** `GET`, `POST`, `PATCH`, `DELETE`.
+- **En-têtes autorisés :** `Content-Type` et `Authorization`.
 
-L'origine configurée est une valeur de développement. Aucun frontend n'est actuellement associé au projet.
+L'origine par défaut est une valeur de développement. Aucun frontend n'est actuellement associé au projet.
 
 CORS contrôle l'accès des scripts exécutés dans les navigateurs aux réponses provenant d'une autre origine. Il ne constitue pas un mécanisme d'authentification et n'empêche pas, à lui seul, les requêtes envoyées avec Postman ou `curl`.
+
+### Limitation de débit
+
+`@nestjs/throttler` limite le nombre de requêtes par adresse IP : 100 par minute par défaut, configurable avec `THROTTLE_LIMIT` et `THROTTLE_TTL`. Au-delà, l'API répond `429 Too Many Requests` au format Problem Details, avec un en-tête `Retry-After`.
+
+### Taille du corps des requêtes
+
+Le corps JSON est limité à `BODY_LIMIT` (10 Ko par défaut). Au-delà, l'API répond `413 Payload Too Large` au format Problem Details.
 
 ---
 
@@ -275,6 +298,29 @@ Ce choix s'explique par les raisons suivantes :
 - Une review peut être consultée, modifiée et supprimée directement à partir de son propre identifiant.
 - Cette séparation respecte le contrat HTTP établi dans le cadre du TP1.
 
+## 📇 Index MongoDB
+
+| Collection | Index | Justification |
+|---|---|---|
+| `reviews` | `placeId` | Accélère `GET /places/:placeId/reviews`, la requête la plus fréquente sur cette collection. |
+| `places` | `name` + `address` (unique) | Empêche deux places identiques. L'unicité est garantie par MongoDB même si deux requêtes arrivent en même temps, ce qu'une simple vérification dans le service ne peut pas assurer. |
+
+Une violation de l'index unique est traduite en `409 Conflict` au format Problem Details, sans détail du pilote MongoDB. L'unicité est sensible à la casse : « Salle A » et « salle a » sont deux places distinctes.
+
+## 📊 Agrégation MongoDB : statistiques par catégorie
+
+`GET /api/v1/places/stats/categories` retourne, pour chaque catégorie, le nombre de places, le nombre total de reviews et la moyenne des notes moyennes :
+
+```json
+[
+  { "category": "LIBRARY", "placeCount": 1, "reviewCount": 1, "averageRating": 4 }
+]
+```
+
+Le calcul est effectué par MongoDB (`$group`, `$project`, `$sort`). Le pipeline est défini dans le code et ne contient aucune donnée provenant du client.
+
+`averageRating` est la moyenne des notes moyennes des places notées, arrondie à deux décimales. Ce n'est pas une moyenne pondérée par le nombre de reviews. Elle vaut `null` si aucune place de la catégorie n'est notée.
+
 ---
 
 ## 🧾 Options réalisées
@@ -283,6 +329,11 @@ Ce choix s'explique par les raisons suivantes :
 |---|---|---:|
 | T1 | Explication du rôle de HTTPS dans le README | +1 |
 | M3 | Justification du choix des références plutôt que de l'imbrication dans MongoDB | +2 |
+| H4 | CORS configuré selon l'environnement | +2 |
+| H1 | Limitation de débit | +4 |
+| M2 | Agrégation MongoDB (`GET /places/stats/categories`) | +4 |
+| H2 | Limite de taille du corps des requêtes et réponse `413` | +2 |
+| M1 | Index unique, index sur `placeId` et gestion de la duplication (`409`) | +6 |
 
 Aucune autre option facultative n'est implantée.
 
@@ -293,6 +344,17 @@ Aucune autre option facultative n'est implantée.
 Une collection Postman contenant les scénarios de vérification se trouve dans le fichier suivant :
 
 `postman/CampusRate.postman_collection.json`
+
+Les scénarios de vérification sont numérotés de #1 à #8. Les requêtes qui démontrent les options sont préfixées `OPT`.
+
+Pour utiliser la collection :
+
+1. Importer le fichier dans Postman.
+2. Vérifier que la variable `baseUrl` vaut `http://localhost:3000/api/v1`.
+3. Envoyer la requête #1, puis copier l'`id` retourné dans la variable de collection `placeId`.
+4. Envoyer les requêtes qui utilisent `{{placeId}}`.
+
+Les requêtes `OPT` de limitation de débit et de taille du corps demandent une préparation particulière : pour obtenir un `429`, démarrer le serveur avec `THROTTLE_LIMIT` à une valeur basse, par exemple `5`.
 
 ---
 
@@ -315,11 +377,13 @@ src/
 ## ⚠️ Limites connues
 
 - **Authentification et autorisation :** aucune n'est implémentée. Toute personne ayant accès à l'API peut potentiellement créer, modifier ou supprimer des données.
-- **Limitation de débit :** aucune mesure ne limite actuellement le nombre de requêtes.
+- **Limitation de débit :** le comptage se fait par adresse IP et en mémoire. Il ne serait pas partagé entre plusieurs instances du serveur.
+- **Taille du corps :** la limite ne s'applique qu'au corps JSON.
 - **Recalcul des statistiques :** le calcul de `averageRating` et de `reviewCount` relit les reviews de la place et n'est pas atomique. Des écritures simultanées peuvent entraîner des valeurs temporairement inexactes.
 - **Suppression des places :** la vérification de l'absence de reviews avant la suppression n'est pas protégée par une transaction.
-- **Configuration CORS :** l'origine autorisée est définie directement dans `main.ts` plutôt que dans une variable d'environnement.
-- **Documentation Swagger :** l'interface est accessible sans restriction. En production, elle devrait être désactivée ou protégée si nécessaire.
+- **Statistiques par catégorie :** la moyenne est calculée à partir des notes moyennes des places, sans pondération par le nombre de reviews.
+- **Unicité des places :** la contrainte `name` + `address` est sensible à la casse et aux espaces.
+- **Documentation Swagger :** les réponses `413` et `429` ne sont pas documentées route par route. L'interface est accessible sans restriction : en production, elle devrait être désactivée ou protégée.
 - **Compte MongoDB :** le compte utilisé en développement possède des droits d'administration. En production, il faudrait utiliser un compte disposant uniquement des permissions nécessaires à la base de données de l'application.
 - **Règles de validation :** les longueurs minimale et maximale de `description`, `authorName` et `comment`, ainsi que la limite de 50 résultats par page, sont des choix de conception.
 - **Tests automatisés :** aucun test automatisé n'est actuellement configuré ; la vérification repose sur les scénarios manuels Postman.
