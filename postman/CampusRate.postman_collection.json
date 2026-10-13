@@ -1,0 +1,336 @@
+{
+  "info": {
+    "_postman_id": "9b7e5189-e986-47d4-a6f4-ac231c5f51b1",
+    "name": "CampusRate",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32954922"
+  },
+  "item": [
+    {
+      "name": "TP2 - Vérification",
+      "item": [
+        {
+          "name": "#1 creation valide",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle TP2\",\r\n \"description\":\"Test pour video idk am tired...\",\r\n \"category\":\"STUDY_SPACE\",\r\n \"address\":\"Pavillon B, B-ZZZ\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#2 consultation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#3 Persistence apres redemarrage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#4 propriete obligatoire manquante",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle TP2\",\r\n \"description\":\"Test pour video idk am tired...\",\r\n \"category\":\"STUDY_SPACE\"\r\n \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#5 Valeur invalide",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle TP2\",\r\n \"description\":\"Test pour video idk am tired...\",\r\n \"category\":\"PAS_UNE_CATEGORIE_BLABLABLABLA\",\r\n \"address\":\"Pavillon B, B-ZZZ\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#6 Propriété inconnue",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle TP2\",\r\n \"description\":\"Test pour video idk am tired...\",\r\n \"category\":\"STUDY_SPACE\",\r\n \"address\":\"Pavillon B, B-ZZZ\",\r\n \"eliesEvilValue\": \"no sleep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#7 Modification valide",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle TP2 mais j'ai changee le nom :D\",\r\n \"description\":\"Test changed still tired...\",\r\n \"category\":\"STUDY_SPACE\",\r\n \"address\":\"Pavillon B, B-ZZZ\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#8 Modification d'un champ contrôlé par le serveur",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"averageRating\":5}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TP2 - Options",
+      "item": [
+        {
+          "name": "OPT M1 création en double",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle M1\",\r\n \"description\":\"Salle de test pour M1.\",\r\n \"category\":\"STUDY_SPACE\",\r\n \"address\":\"Pavillon C, C-101\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OPT M1 PATCH vers un doublon",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/places/id_M1_ici",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places",
+                "id_M1_ici"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OPT M2 statistiques",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/places/stats/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places",
+                "stats",
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OPT H2 corps trop gros",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n \"name\":\"Salle GIANT\",\r\n \"description\":\"met giant ici from bloc note\",\r\n \"category\":\"STUDY_SPACE\",\r\n \"address\":\"Pavillon C, C-101\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OPT H1 limitation de débit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            },
+            "description": "change throttle limit sur .env a 5 puis relance server pour tester ici."
+          },
+          "response": []
+        },
+        {
+          "name": "OPT H4 CORS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "placeId",
+      "value": ""
+    }
+  ]
+}
